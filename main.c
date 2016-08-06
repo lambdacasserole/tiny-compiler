@@ -146,21 +146,25 @@ struct Token* tokenize(char* source) {
     // Allocate space for that number of tokens.
     struct Token* tokens = (struct Token*) calloc(sizeof(struct Token), size);
 
+    char* seq = (char*) calloc(1, TOKEN_MAX_LEN); // Hold current token text.
+
     int len = strlen(source);
     int prev = UNKNOWN;
-    char* seq = (char*) calloc(1, TOKEN_MAX_LEN);
     for (int i = 0; i < len; i++) {
-        int cur = ttype(source[i]);
-        if (prev != UNKNOWN) {
-            if (tsingle(prev) || cur != prev) {
-                temit(tokens, prev, seq); // Emit token.
-                seq = (char*) calloc(1, TOKEN_MAX_LEN);
-            }
+        int curr = ttype(source[i]); // Current token type.
+
+        // If token boundary is crossed.
+        if (prev != UNKNOWN && (tsingle(prev) || curr != prev)) {
+            temit(tokens, prev, seq); // Emit token.
+            seq = (char*) calloc(1, TOKEN_MAX_LEN); // Fresh token text.
         }
-        if (cur != UNKNOWN) {
-            append(seq, source[i]); // Append to sequence.
+
+        // Append to sequence if not unknown.
+        if (curr != UNKNOWN) {
+            append(seq, source[i]);
         }
-        prev = cur;
+
+        prev = curr;
     }
 
     // Emit last token if not unknown.
