@@ -8,6 +8,12 @@
 #define SYMBOL 3
 #define NUMBER 4
 
+// Node types.
+#define N_UNKNOWN 0
+#define N_NUMBER 2
+#define N_SYMBOL 3
+#define N_EXPR 4
+
 // Maximum token length.
 #define TOKEN_MAX_LEN 16
 
@@ -17,6 +23,17 @@
 struct Token {
     int type;
     char* seq;
+};
+
+/**
+ * Represents a node in a parse tree.
+ */
+struct Node {
+    int type;
+    int start;
+    struct Node* operator;
+    struct Node* x;
+    struct Node* y;
 };
 
 /**
@@ -175,6 +192,86 @@ struct Token* tokenize(char* source) {
     return tokens;
 }
 
+int nextexp(struct Token* tokens, int start) {
+    if (tokens[start].type == LEFT_PAREN) {
+        int i = 1; // Brackets better be balanced.
+        int p = start;
+        while (i != 0) {
+            p++;
+            if (tokens[p].type == LEFT_PAREN) {
+                i++;
+            }
+            else if (tokens[p].type == RIGHT_PAREN) {
+                i--;
+            }
+        }
+        return p + 1;
+    }
+    return start + 1;
+}
+
+/**
+ * Parses a list of tokens into an expession tree.
+ *
+ * @param tokens    the token list to parse
+ */
+struct Node* parse(struct Node* node, struct Token* tokens) {
+    switch (tokens[node->start].type) { // Assign type to node.
+        case LEFT_PAREN:
+            node->type = N_EXPR;
+            break;
+        case NUMBER:
+            node->type = N_NUMBER;
+            break;
+        case SYMBOL:
+            node->type = N_SYMBOL;
+            break;
+    }
+
+    // If it's a list expression we should read it.
+    if (node->type == N_EXPR) {
+
+        // Add operator node.
+        struct Node* op = (struct Node*) calloc(sizeof(struct Node), 1);
+        op->type = N_UNKNOWN;
+        op->start = node->start + 1;
+        node->operator = op;
+        parse(op, tokens);
+
+        // Add left operand node.
+        struct Node* x = (struct Node*) calloc(sizeof(struct Node), 1);
+        int sx = nextexp(tokens, node->start + 1);
+        x->type = N_UNKNOWN;
+        x->start = sx;
+        node->x = x;
+        parse(x, tokens);
+
+        // Add right operand node.
+        struct Node* y = (struct Node*) calloc(sizeof(struct Node), 1);
+        int sy = nextexp(tokens, sx);
+        y->type = N_UNKNOWN;
+        y->start = sy;
+        node->y = y;
+        parse(y, tokens);
+    }
+}
+
+void compile(struct Node* node, struct Token* tokens) {
+    switch (node->type) {
+        case N_NUMBER:
+            printf("push %s\n", tokens[node->start].seq);
+            break;
+        case N_SYMBOL:
+            printf("%s\n", tokens[node->start].seq);
+            break;
+        case N_EXPR:
+            compile(node->x, tokens);
+            compile(node->y, tokens);
+            compile(node->operator, tokens);
+            break;
+    }
+}
+
 main() {
     // Read in source.
     char* source = read("test.txt");
@@ -189,6 +286,14 @@ main() {
     for (int i = 0; i < size; i++) {
         printf("Type: %d | Sequence: %s\n", tokens[i].type, tokens[i].seq);
     }
+
+    // Define root node.
+    struct Node* root = (struct Node*) calloc(sizeof(struct Node), 1);
+    root->type = N_UNKNOWN; // Must be cons.
+    root->start = 0;
+
+    parse(root, tokens); // Recursively parse.
+    compile(root, tokens);
 
     // TODO: Deallocate memory.
 }
