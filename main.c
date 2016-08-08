@@ -256,18 +256,18 @@ struct Node* parse(struct Node* node, struct Token* tokens) {
     }
 }
 
-void compile(struct Node* node, struct Token* tokens) {
+void compile(struct Node* node, struct Token* tokens, FILE* file) {
     switch (node->type) {
         case N_NUMBER:
-            printf("push %s\n", tokens[node->start].seq);
+            fprintf(file, "push %s\n", tokens[node->start].seq);
             break;
         case N_SYMBOL:
-            printf("%s\n", tokens[node->start].seq);
+            fprintf(file, "%s\n", tokens[node->start].seq);
             break;
         case N_EXPR:
-            compile(node->y, tokens);
-            compile(node->z, tokens);
-            compile(node->x, tokens);
+            compile(node->y, tokens, file);
+            compile(node->z, tokens, file);
+            compile(node->x, tokens, file);
             break;
     }
 }
@@ -293,7 +293,13 @@ main() {
     root->start = 0;
 
     parse(root, tokens); // Recursively parse.
-    compile(root, tokens);
+
+    FILE* f = fopen("test.ssm", "w");
+
+
+    compile(root, tokens, f);
+
+        fclose(f);
 
     // TODO: Deallocate memory.
 }
