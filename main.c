@@ -256,18 +256,25 @@ struct Node* parse(struct Node* node, struct Token* tokens) {
     }
 }
 
+/**
+ * Compiles a node to an output file.
+ *
+ * @param node    the node to compile
+ * @param tokens  the tokenized source
+ * @param file    the file to compile to
+ */
 void compile(struct Node* node, struct Token* tokens, FILE* file) {
     switch (node->type) {
-        case N_NUMBER:
+        case N_NUMBER: // Numbers are pushed to the stack.
             fprintf(file, "push %s\n", tokens[node->start].seq);
             break;
-        case N_SYMBOL:
+        case N_SYMBOL: // Symbols are assumed to be operators.
             fprintf(file, "%s\n", tokens[node->start].seq);
             break;
-        case N_EXPR:
-            compile(node->y, tokens, file);
-            compile(node->z, tokens, file);
-            compile(node->x, tokens, file);
+        case N_EXPR: // Asssume all operators are binary.
+            compile(node->y, tokens, file); // Push left operand.
+            compile(node->z, tokens, file); // Push right operand.
+            compile(node->x, tokens, file); // Execute operator.
             break;
     }
 }
@@ -294,12 +301,10 @@ main() {
 
     parse(root, tokens); // Recursively parse.
 
-    FILE* f = fopen("test.ssm", "w");
-
-
-    compile(root, tokens, f);
-
-        fclose(f);
+    // Compile to file.
+    FILE* file = fopen("test.ssm", "w");
+    compile(root, tokens, file);
+    fclose(file);
 
     // TODO: Deallocate memory.
 }
