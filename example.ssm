@@ -1,5 +1,11 @@
-push 4
-push 1
 push 3
+push 4
+mul
+push 3
+push 4
+add
+push 9
+push 8
 sub
+mul
 add
