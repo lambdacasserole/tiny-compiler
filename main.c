@@ -2,17 +2,17 @@
 #include <ctype.h>
 
 // Token types.
-#define UNKNOWN 0
-#define LEFT_PAREN 1
-#define RIGHT_PAREN 2
-#define SYMBOL 3
-#define NUMBER 4
+#define T_UNKNOWN 0
+#define T_LEFT_PAREN 1
+#define T_RIGHT_PAREN 2
+#define T_SYMBOL 3
+#define T_NUMBER 4
 
 // Node types.
 #define N_UNKNOWN 0
-#define N_NUMBER 2
-#define N_SYMBOL 3
-#define N_EXPR 4
+#define N_NUMBER 1
+#define N_SYMBOL 2
+#define N_EXPR 3
 
 // Maximum token length.
 #define TOKEN_MAX_LEN 16
@@ -31,9 +31,9 @@ struct Token {
 struct Node {
     int type;
     int start;
-    struct Node* operator;
     struct Node* x;
     struct Node* y;
+    struct Node* z;
 };
 
 /**
@@ -68,18 +68,18 @@ char* read(char *path) {
  * @param chr   the character to get the token type of
  */
 int ttype(char chr) {
-    int type = UNKNOWN;
+    int type = T_UNKNOWN;
     if (chr == '(') {
-        type = LEFT_PAREN;
+        type = T_LEFT_PAREN;
     }
     else if (chr == ')') {
-        type = RIGHT_PAREN;
+        type = T_RIGHT_PAREN;
     }
     else if (isdigit(chr)) {
-        type = NUMBER;
+        type = T_NUMBER;
     }
     else if (isalpha(chr)) {
-        type = SYMBOL;
+        type = T_SYMBOL;
     }
     return type;
 }
@@ -90,7 +90,7 @@ int ttype(char chr) {
  * @param type  the token type to check
  */
 int tsingle(int type) {
-    return type == LEFT_PAREN || type == RIGHT_PAREN;
+    return type == T_LEFT_PAREN || type == T_RIGHT_PAREN;
 }
 
 /**
@@ -130,26 +130,26 @@ void append(char* string, char chr) {
 }
 
 /**
- * Counts the number of tokens in a source string.
+ * Counts the T_NUMBER of tokens in a source string.
  *
  * @param source    the source string
  */
 int tmeasure(char* source) {
-    int count = 0; // We need to count the number of tokens in the string.
+    int count = 0; // We need to count the T_NUMBER of tokens in the string.
 
     // Count tokens in source.
     int len = strlen(source);
-    int prev = UNKNOWN;
+    int prev = T_UNKNOWN;
     for (int i = 0; i < len; i++) {
         int curr = ttype(source[i]);
-        if (prev != UNKNOWN && (tsingle(prev) || curr != prev)) {
+        if (prev != T_UNKNOWN && (tsingle(prev) || curr != prev)) {
             count++;
         }
         prev = curr;
     }
 
-    // Count last token if not unknown.
-    return count + (prev == UNKNOWN ? 0 : 1);
+    // Count last token if not T_UNKNOWN.
+    return count + (prev == T_UNKNOWN ? 0 : 1);
 }
 
 /**
@@ -158,34 +158,34 @@ int tmeasure(char* source) {
  * @param source    the string of source code to tokenize
  */
 struct Token* tokenize(char* source) {
-    int size = tmeasure(source); // Get number of tokens in source.
+    int size = tmeasure(source); // Get T_NUMBER of tokens in source.
 
-    // Allocate space for that number of tokens.
+    // Allocate space for that T_NUMBER of tokens.
     struct Token* tokens = (struct Token*) calloc(sizeof(struct Token), size);
 
     char* seq = (char*) calloc(1, TOKEN_MAX_LEN); // Hold current token text.
 
     int len = strlen(source);
-    int prev = UNKNOWN;
+    int prev = T_UNKNOWN;
     for (int i = 0; i < len; i++) {
         int curr = ttype(source[i]); // Current token type.
 
         // If token boundary is crossed.
-        if (prev != UNKNOWN && (tsingle(prev) || curr != prev)) {
+        if (prev != T_UNKNOWN && (tsingle(prev) || curr != prev)) {
             temit(tokens, prev, seq); // Emit token.
             seq = (char*) calloc(1, TOKEN_MAX_LEN); // Fresh token text.
         }
 
-        // Append to sequence if not unknown.
-        if (curr != UNKNOWN) {
+        // Append to sequence if not T_UNKNOWN.
+        if (curr != T_UNKNOWN) {
             append(seq, source[i]);
         }
 
         prev = curr;
     }
 
-    // Emit last token if not unknown.
-    if (prev != UNKNOWN) {
+    // Emit last token if not T_UNKNOWN.
+    if (prev != T_UNKNOWN) {
         temit(tokens, prev, seq);
     }
 
@@ -193,15 +193,15 @@ struct Token* tokenize(char* source) {
 }
 
 int nextexp(struct Token* tokens, int start) {
-    if (tokens[start].type == LEFT_PAREN) {
+    if (tokens[start].type == T_LEFT_PAREN) {
         int i = 1; // Brackets better be balanced.
         int p = start;
         while (i != 0) {
             p++;
-            if (tokens[p].type == LEFT_PAREN) {
+            if (tokens[p].type == T_LEFT_PAREN) {
                 i++;
             }
-            else if (tokens[p].type == RIGHT_PAREN) {
+            else if (tokens[p].type == T_RIGHT_PAREN) {
                 i--;
             }
         }
@@ -217,13 +217,13 @@ int nextexp(struct Token* tokens, int start) {
  */
 struct Node* parse(struct Node* node, struct Token* tokens) {
     switch (tokens[node->start].type) { // Assign type to node.
-        case LEFT_PAREN:
+        case T_LEFT_PAREN:
             node->type = N_EXPR;
             break;
-        case NUMBER:
+        case T_NUMBER:
             node->type = N_NUMBER;
             break;
-        case SYMBOL:
+        case T_SYMBOL:
             node->type = N_SYMBOL;
             break;
     }
@@ -232,27 +232,27 @@ struct Node* parse(struct Node* node, struct Token* tokens) {
     if (node->type == N_EXPR) {
 
         // Add operator node.
-        struct Node* op = (struct Node*) calloc(sizeof(struct Node), 1);
-        op->type = N_UNKNOWN;
-        op->start = node->start + 1;
-        node->operator = op;
-        parse(op, tokens);
-
-        // Add left operand node.
         struct Node* x = (struct Node*) calloc(sizeof(struct Node), 1);
-        int sx = nextexp(tokens, node->start + 1);
         x->type = N_UNKNOWN;
-        x->start = sx;
+        x->start = node->start + 1;
         node->x = x;
         parse(x, tokens);
 
-        // Add right operand node.
+        // Add left operand node.
         struct Node* y = (struct Node*) calloc(sizeof(struct Node), 1);
-        int sy = nextexp(tokens, sx);
+        int sy = nextexp(tokens, node->start + 1);
         y->type = N_UNKNOWN;
         y->start = sy;
         node->y = y;
         parse(y, tokens);
+
+        // Add right operand node.
+        struct Node* z = (struct Node*) calloc(sizeof(struct Node), 1);
+        int sz = nextexp(tokens, sy);
+        z->type = N_UNKNOWN;
+        z->start = sz;
+        node->z = z;
+        parse(z, tokens);
     }
 }
 
@@ -265,9 +265,9 @@ void compile(struct Node* node, struct Token* tokens) {
             printf("%s\n", tokens[node->start].seq);
             break;
         case N_EXPR:
-            compile(node->x, tokens);
             compile(node->y, tokens);
-            compile(node->operator, tokens);
+            compile(node->z, tokens);
+            compile(node->x, tokens);
             break;
     }
 }
