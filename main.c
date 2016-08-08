@@ -281,7 +281,7 @@ void compile(struct Node* node, struct Token* tokens, FILE* file) {
 
 main() {
     // Read in source.
-    char* source = read("test.txt");
+    char* source = read("example.math");
     printf("Source: %s\n", source);
 
     // Count tokens.
@@ -302,7 +302,7 @@ main() {
     parse(root, tokens); // Recursively parse.
 
     // Compile to file.
-    FILE* file = fopen("test.ssm", "w");
+    FILE* file = fopen("example.ssm", "w");
     compile(root, tokens, file);
     fclose(file);
 
