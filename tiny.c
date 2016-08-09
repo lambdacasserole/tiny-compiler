@@ -271,7 +271,7 @@ struct Node* parse(struct Node* node, struct Token* tokens) {
 void compile(struct Node* node, struct Token* tokens, FILE* file) {
     switch (node->type) {
         case N_NUMBER: // Numbers are pushed to the stack.
-            fprintf(file, "push %s\n", tokens[node->start].seq);
+            fprintf(file, "ldc %s\n", tokens[node->start].seq);
             break;
         case N_SYMBOL: // Symbols are assumed to be operators.
             fprintf(file, "%s\n", tokens[node->start].seq);
