@@ -1,11 +1,11 @@
-push 3
-push 4
+ldc 3
+ldc 4
 mul
-push 3
-push 4
+ldc 3
+ldc 4
 add
-push 9
-push 8
+ldc 9
+ldc 8
 sub
 mul
 add
