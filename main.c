@@ -130,12 +130,12 @@ void append(char* string, char chr) {
 }
 
 /**
- * Counts the T_NUMBER of tokens in a source string.
+ * Counts the number of tokens in a source string.
  *
  * @param source    the source string
  */
 int tmeasure(char* source) {
-    int count = 0; // We need to count the T_NUMBER of tokens in the string.
+    int count = 0; // We need to count the number of tokens in the string.
 
     // Count tokens in source.
     int len = strlen(source);
@@ -158,9 +158,9 @@ int tmeasure(char* source) {
  * @param source    the string of source code to tokenize
  */
 struct Token* tokenize(char* source) {
-    int size = tmeasure(source); // Get T_NUMBER of tokens in source.
+    int size = tmeasure(source); // Get number of tokens in source.
 
-    // Allocate space for that T_NUMBER of tokens.
+    // Allocate space for that number of tokens.
     struct Token* tokens = (struct Token*) calloc(sizeof(struct Token), size);
 
     char* seq = (char*) calloc(1, TOKEN_MAX_LEN); // Hold current token text.
