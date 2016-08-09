@@ -192,22 +192,27 @@ struct Token* tokenize(char* source) {
     return tokens;
 }
 
+/**
+ * Returns the starting index of the next expression in a token list.
+ *
+ * @param tokens  the token list
+ * @param start   the index to start at
+ */
 int nextexp(struct Token* tokens, int start) {
+    int i = start;
     if (tokens[start].type == T_LEFT_PAREN) {
-        int i = 1; // Brackets better be balanced.
-        int p = start;
-        while (i != 0) {
-            p++;
-            if (tokens[p].type == T_LEFT_PAREN) {
-                i++;
+        int b = 1; // Brackets better be balanced.
+        while (b != 0) {
+            i++;
+            if (tokens[i].type == T_LEFT_PAREN) {
+                b++;
             }
-            else if (tokens[p].type == T_RIGHT_PAREN) {
-                i--;
+            else if (tokens[i].type == T_RIGHT_PAREN) {
+                b--;
             }
         }
-        return p + 1;
     }
-    return start + 1;
+    return i + 1;
 }
 
 /**
