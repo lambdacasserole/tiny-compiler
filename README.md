@@ -14,11 +14,13 @@ tcc tiny.c
 The source language consists of an arbitrarily deep tree of expressions. An expression may take the form of a number or three-member tuple containing an operator followed by exactly two operands which must each themselves be expressions. In EBNF:
 
 ```
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-number = digit, { digit };
-operator = "add" | "sub" | "mul" | "div";
-expression = number | ( "(", operator, expression, expression, ")" );
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9".
+number = digit { digit }.
+operator = "add" | "sub" | "mul" | "div".
+expression = number | ( "(" operator expression expression ")" ).
 ```
+
+This grammar is written to be compatible with [a piece of visualization software](http://dotnet.jku.at/applications/visualizer/) developed by a team at the University of Linz.
 
 ## Limitations
 This 'compiler' obviously has a few limitations:
