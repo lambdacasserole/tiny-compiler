@@ -24,6 +24,23 @@ This grammar is written to be compatible with [a piece of visualization software
 
 ![Grammar](https://github.com/lambdacasserole/tiny-compiler/raw/master/grammar/grammar.png)
 
+## Target Language
+The target for this compiler is the [Simple Stack Machine](http://www.staff.science.uu.nl/~dijks106/SSM/). The source code:
+
+```
+(add 1 2)
+```
+
+Will produce the following result:
+
+```
+ldc 1
+ldc 2
+add
+```
+
+This will push two constants onto the stack (using the `ldc` command) and then add them together, pushing the result back on to the stack.
+
 ## Limitations
 This 'compiler' obviously has a few limitations:
 
