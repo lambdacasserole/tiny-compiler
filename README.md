@@ -20,7 +20,9 @@ operator = "add" | "sub" | "mul" | "div".
 expression = number | ( "(" operator expression expression ")" ).
 ```
 
-This grammar is written to be compatible with [a piece of visualization software](http://dotnet.jku.at/applications/visualizer/) developed by a team at the University of Linz.
+This grammar is written to be compatible with [a piece of visualization software](http://dotnet.jku.at/applications/visualizer/) developed by a team at the University of Linz. To save you downloading it and rendering the grammar, here it is visually:
+
+![Grammar](https://github.com/lambdacasserole/tiny-compiler/raw/master/grammar/grammar.png)
 
 ## Limitations
 This 'compiler' obviously has a few limitations:
